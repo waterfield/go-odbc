@@ -2,14 +2,45 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+/*
+Package driver provides a driver for database/sql.
+
+Example:
+
+	package main
+
+	import (
+	   "database/sql"
+	   _ "github.com/kch42/go-odbc/odbc/driver"
+	   "fmt"
+	)
+
+	func main() {
+	   db, err := sql.Open("odbc", "DSN=test;")
+	   defer db.Close()
+
+	   stmt, err :=	db.Prepare("select name from table")
+	   defer stmt.Close()
+
+	   rows, err :=	stmt.Query()
+	   defer rows.Close()
+
+	   for rows.Next() {
+	       var name string
+
+	       _ = rows.Scan(&name)
+	       fmt.Println(name)
+	   }
+	}
+*/
 package driver
 
 import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
+	"github.com/kch42/go-odbc/odbc"
 	"io"
-	"odbc"
 )
 
 func init() {
