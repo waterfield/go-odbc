@@ -100,12 +100,18 @@ type tx struct {
 
 func (t *tx) Commit() error {
 	err := t.c.c.Commit()
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (t *tx) Rollback() error {
 	err := t.c.c.Rollback()
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type stmt struct {
@@ -118,8 +124,12 @@ func (s *stmt) Exec(args []driver.Value) (driver.Result, error) {
 	}
 
 	rowsAffected, err := s.st.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+
 	r := &result{rowsAffected: int64(rowsAffected)}
-	return r, err
+	return r, nil
 }
 
 func (s *stmt) NumInput() int {
@@ -172,7 +182,11 @@ func (r *rows) Columns() []string {
 }
 
 func (r *rows) Close() error {
-	return r.s.Close()
+	err := r.s.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *rows) Next(dest []driver.Value) error {
