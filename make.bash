@@ -1,4 +1,4 @@
 #!/bin/bash
 
 export CGO_LDFLAGS=-lodbc
-go install
+go install "$@"
