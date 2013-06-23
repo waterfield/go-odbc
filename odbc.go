@@ -5,7 +5,7 @@
 package odbc
 
 /*
-#cgo darwin LDFLAGS: -lodbc
+#cgo darwin LDFLAGS: -liodbc
 #cgo freebsd LDFLAGS: -lodbc
 #cgo linux LDFLAGS: -lodbc
 #cgo windows LDFLAGS: -lodbc32
