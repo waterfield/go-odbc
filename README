@@ -1,7 +1,7 @@
 ODBC database driver for Go
 
 Install:
-	go get github.com/kch42/go-odbc/odbc
+	go get github.com/waterfield/go-odbc/odbc
 
 Tested on:
 	SQL Server 2005 and Windows 7 
