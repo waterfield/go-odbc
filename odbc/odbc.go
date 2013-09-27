@@ -5,7 +5,7 @@
 package odbc
 
 /*
-#cgo darwin LDFLAGS: -lodbc
+#cgo darwin LDFLAGS: -liodbc
 #cgo freebsd LDFLAGS: -lodbc
 #cgo linux LDFLAGS: -lodbc
 #cgo windows LDFLAGS: -lodbc32
@@ -481,7 +481,7 @@ func (stmt *Statement) GetField(field_index int) (v interface{}, ftype int, flen
 	var fl C.SQLLEN = C.SQLLEN(field_len)
 	switch int(field_type) {
 	case C.SQL_BIT:
-		var value C.BYTE
+		var value C.SQLCHAR
 		ret = C.SQLGetData(C.SQLHSTMT(stmt.handle), C.SQLUSMALLINT(field_index+1), C.SQL_C_BIT, C.SQLPOINTER(unsafe.Pointer(&value)), 0, &fl)
 		if fl == -1 {
 			v = nil
