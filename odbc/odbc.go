@@ -632,8 +632,13 @@ func (stmt *Statement) BindParam(index int, param interface{}) *ODBCError {
 			var slen C.SQLUINTEGER = C.SQLUINTEGER(len(v.String()))
 			ParameterType = C.SQL_VARCHAR
 			ValueType = C.SQL_C_CHAR
-			s := []byte(v.String())
-			ParameterValuePtr = C.SQLPOINTER(unsafe.Pointer(&s[0]))
+			if slen > 0 {
+				s := []byte(v.String())
+				ParameterValuePtr = C.SQLPOINTER(unsafe.Pointer(&s[0]))
+			} else {
+				b := byte(0)
+				ParameterValuePtr = C.SQLPOINTER(unsafe.Pointer(&b))
+			}
 			ColumnSize = C.SQLULEN(slen)
 			BufferLength = C.SQLLEN(slen + 1)
 			StrLen_or_IndPt = C.SQLLEN(slen)
