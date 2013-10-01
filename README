@@ -4,6 +4,4 @@ Install:
 	go get github.com/waterfield/go-odbc/odbc
 
 Tested on:
-	SQL Server 2005 and Windows 7 
-	SQL Server 2005 and Ubuntu 10.4 (UnixODBC+FreeTDS)
-	Oracle 10g and Windows 7
+	SQL Server 2008R2 and Ubuntu 10.4 (UnixODBC+FreeTDS)

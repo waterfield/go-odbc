@@ -10,7 +10,7 @@ Example:
 	package main
 
 	import (
-		"github.com/kch42/go-odbc/odbc"
+		"github.com/waterfield/go-odbc/odbc"
 	)
 
 	func main() {

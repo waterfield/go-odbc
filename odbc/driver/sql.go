@@ -11,7 +11,7 @@ Example:
 
 	import (
 	   "database/sql"
-	   _ "github.com/kch42/go-odbc/odbc/driver"
+	   _ "github.com/waterfield/go-odbc/odbc/driver"
 	   "fmt"
 	)
 
@@ -39,7 +39,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
-	"github.com/kch42/go-odbc/odbc"
+	"github.com/waterfield/go-odbc/odbc"
 	"io"
 )
 
