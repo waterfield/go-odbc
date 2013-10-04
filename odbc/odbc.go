@@ -72,6 +72,18 @@ type Statement struct {
 	handle C.SQLHANDLE
 }
 
+type Field struct {
+	Name          string
+	Type          int
+	Size          int
+	DecimalDigits int
+	Nullable      int
+}
+
+type Row struct {
+	Data []interface{}
+}
+
 type ODBCError struct {
 	SQLState     string
 	NativeError  int
@@ -313,7 +325,9 @@ func (stmt *Statement) Execute(params ...interface{}) *ODBCError {
 			return err
 		}
 		for i := 0; i < int(cParams); i++ {
-			stmt.BindParam(i+1, params[i])
+			if err := stmt.BindParam(i+1, params[i]); err != nil {
+				return err
+			}
 		}
 	}
 	ret := C.SQLExecute(C.SQLHSTMT(stmt.handle))
@@ -339,7 +353,9 @@ func (stmt *Statement) Execute2(params []driver.Value) *ODBCError {
 			return err
 		}
 		for i := 0; i < int(cParams); i++ {
-			stmt.BindParam(i+1, params[i])
+			if err := stmt.BindParam(i+1, params[i]); err != nil {
+				return err
+			}
 		}
 	}
 	ret := C.SQLExecute(C.SQLHSTMT(stmt.handle))
@@ -368,10 +384,6 @@ func (stmt *Statement) Fetch() (bool, *ODBCError) {
 	return true, nil
 }
 
-type Row struct {
-	Data []interface{}
-}
-
 // Get(Columnindex)
 // TODO Get(ColumnName)
 func (r *Row) Get(a interface{}) interface{} {
@@ -381,6 +393,7 @@ func (r *Row) Get(a interface{}) interface{} {
 		return r.Data[f.Int()]
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		return r.Data[f.Uint()]
+	case reflect.String:
 		//	case *reflect.StringValue:
 		//		i := r.Meta[f.Get()]
 		//		return r.Data[i]
@@ -515,8 +528,12 @@ func (stmt *Statement) GetField(field_index int) (v interface{}, ftype int, flen
 	case C.SQL_CHAR, C.SQL_VARCHAR, C.SQL_LONGVARCHAR, C.SQL_WCHAR, C.SQL_WVARCHAR, C.SQL_WLONGVARCHAR:
 		value := make([]uint16, int(field_len)+8)
 		ret = C.SQLGetData(C.SQLHSTMT(stmt.handle), C.SQLUSMALLINT(field_index+1), C.SQL_C_WCHAR, C.SQLPOINTER(unsafe.Pointer(&value[0])), (field_len+4)*2, &fl)
-		s := UTF16ToString(value)
-		v = s
+		if fl == -1 {
+			v = nil
+		} else {
+			s := UTF16ToString(value)
+			v = s
+		}
 	case C.SQL_TYPE_TIMESTAMP, C.SQL_TYPE_DATE, C.SQL_TYPE_TIME, C.SQL_DATETIME:
 		var value C.TIMESTAMP_STRUCT
 		ret = C.SQLGetData(C.SQLHSTMT(stmt.handle), C.SQLUSMALLINT(field_index+1), C.SQL_C_TYPE_TIMESTAMP, C.SQLPOINTER(unsafe.Pointer(&value)), C.SQLLEN(unsafe.Sizeof(value)), &fl)
@@ -577,14 +594,7 @@ func (stmt *Statement) BindParam(index int, param interface{}) *ODBCError {
 	var StrLen_or_IndPt C.SQLLEN
 	v := reflect.ValueOf(param)
 	if param == nil {
-		ft, _, _, _, err := stmt.GetParamType(index)
-		if err != nil {
-			return err
-		}
-		ParameterType = C.SQLSMALLINT(ft)
-		if ParameterType == C.SQL_UNKNOWN_TYPE {
-			ParameterType = C.SQL_VARCHAR
-		}
+		ParameterType = C.SQL_VARCHAR
 		ValueType = C.SQL_C_DEFAULT
 		StrLen_or_IndPt = C.SQL_NULL_DATA
 		ColumnSize = 1
@@ -643,7 +653,7 @@ func (stmt *Statement) BindParam(index int, param interface{}) *ODBCError {
 			BufferLength = C.SQLLEN(slen + 1)
 			StrLen_or_IndPt = C.SQLLEN(slen)
 		default:
-			fmt.Println("Not support type", v)
+			panic(fmt.Sprintf("Unsupported type: %v", v))
 		}
 	}
 	ret := C.SQLBindParameter(C.SQLHSTMT(stmt.handle), C.SQLUSMALLINT(index), C.SQL_PARAM_INPUT, ValueType, ParameterType, ColumnSize, DecimalDigits, ParameterValuePtr, BufferLength, &StrLen_or_IndPt)
@@ -676,14 +686,6 @@ func (stmt *Statement) NumRows() (int, *ODBCError) {
 func (stmt *Statement) HasRows() bool {
 	n, _ := stmt.NumRows()
 	return n > 0
-}
-
-type Field struct {
-	Name          string
-	Type          int
-	Size          int
-	DecimalDigits int
-	Nullable      int
 }
 
 func (stmt *Statement) FieldMetadata(col int) (*Field, *ODBCError) {
