@@ -39,8 +39,8 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
-	"github.com/waterfield/go-odbc/odbc"
 	"io"
+	"odbc/odbc"
 )
 
 func init() {
