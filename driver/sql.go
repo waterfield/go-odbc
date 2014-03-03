@@ -40,7 +40,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"io"
-	"odbc/odbc"
+	"odbc"
 )
 
 func init() {
